@@ -1,0 +1,22 @@
+actions :create, :destroy
+
+attribute :name, kind_of: String
+attribute :disks, kind_of: Array
+
+attribute :info, kind_of: Mixlib::ShellOut, default: nil
+attribute :state, kind_of: String, default: nil
+
+# Optional attributes
+attribute :force, kind_of: [TrueClass, FalseClass], default: false
+attribute :recursive, kind_of: [TrueClass, FalseClass], default: false
+attribute :ashift, kind_of: Integer, default: 0
+attribute :raid, kind_of: String, equal_to: %w(mirror raidz raidz1 raidz2 raidz3), default: nil
+attribute :cache_disks, kind_of: Array, default: nil
+attribute :log_disks, kind_of: Array, default: nil
+attribute :mountpoint, :name_attribute => true, kind_of: String
+attribute :autoexpand, kind_of: [TrueClass, FalseClass], default: false
+
+def initialize(*args)
+  super
+  @action = :create
+end
