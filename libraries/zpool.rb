@@ -15,16 +15,6 @@ class Chef
         @action = :create
         @allowed_actions.push(:create,:destroy)
         @name = name
-#        @disks = []
-#        @info = nil
-#        @state = nil
-#        @force = false
-#        @recursive = false
-#        @ashift = 0
-#        @cache_disks = nil
-#        @log_disks = nil
-#        @mountpoint = name
-#        @autoexpand = false
       end
 
       def action=(arg = nil)
@@ -100,24 +90,24 @@ class Chef
       end
 
       def zpool_add(disk)
-        Chef::Log.info("Adding #{disk} to pool #{@zpool.name}")
-        shell_out!("zpool add #{args_from_resource_add(@new_resource)} #{@zpool.name} #{disk}")
-        new_resource.updated_by_last_action(true)
+        converge_by("Adding #{disk} to pool #{@zpool.name}") do
+          shell_out!("zpool add #{args_from_resource_add(@new_resource)} #{@zpool.name} #{disk}")
+        end
       end
 
       def zpool_create
-        Chef::Log.info("Creating zpool #{@zpool.name}")
-        zpool_command = "zpool create #{args_from_resource_create(@new_resource)} #{@zpool.name} #{@zpool.disks.join(' ')}"
-        zpool_command << " log #{@zpool.log_disks.join(' ')}" unless @zpool.log_disks.nil?
-        zpool_command << " cache #{@zpool.cache_disks.join(' ')}" unless @zpool.cache_disks.nil?
-        shell_out!(zpool_command)
-        new_resource.updated_by_last_action(true)
+        converge_by("Creating zpool #{@zpool.name}") do
+          zpool_command = "zpool create #{args_from_resource_create(@new_resource)} #{@zpool.name} #{@zpool.disks.join(' ')}"
+          zpool_command << " log #{@zpool.log_disks.join(' ')}" unless @zpool.log_disks.nil?
+          zpool_command << " cache #{@zpool.cache_disks.join(' ')}" unless @zpool.cache_disks.nil?
+          shell_out!(zpool_command)
+        end
       end
 
       def zpool_destroy
-       Chef::Log.info("Destroying zpool #{@zpool.name}")
-       shell_out!("zpool destroy #{args_from_resource_add(@new_resource)} #{@zpool.name}")
-       new_resource.updated_by_last_action(true)
+       converge_by("Destroying zpool #{@zpool.name}") do
+         shell_out!("zpool destroy #{args_from_resource_add(@new_resource)} #{@zpool.name}")
+       end
       end
 
       def action_create
