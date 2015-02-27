@@ -13,12 +13,12 @@ class Chef
         @resource_name = :zpool
         @provider = Chef::Provider::Zpool
         @action = :create
-        @allowed_actions.push(:create,:destroy)
+        @allowed_actions.push(:create, :destroy)
         @name = name
       end
 
       def action=(arg = nil)
-       set_or_return(:action, arg, :kind_of => [Symbol])
+        set_or_return(:action, arg, :kind_of => [Symbol])
       end
 
       def disks(arg = nil)
@@ -68,7 +68,6 @@ class Chef
   class Provider
     # Zpool Provider
     class Zpool < Chef::Provider
-
       include Chef::Mixin::ShellOut
 
       def whyrun_supported?
@@ -86,7 +85,6 @@ class Chef
 
         @zpool.info(info)
         @zpool.state(state)
-
       end
 
       def zpool_add(disk)
@@ -95,6 +93,7 @@ class Chef
         end
       end
 
+      # rubocop:disable Metrics/AbcSize, Metrics/LineLength
       def zpool_create
         converge_by("Creating zpool #{@zpool.name}") do
           zpool_command = "zpool create #{args_from_resource_create(@new_resource)} #{@zpool.name} #{@zpool.disks.join(' ')}"
@@ -103,13 +102,15 @@ class Chef
           shell_out!(zpool_command)
         end
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/LineLength
 
       def zpool_destroy
-       converge_by("Destroying zpool #{@zpool.name}") do
-         shell_out!("zpool destroy #{args_from_resource_add(@new_resource)} #{@zpool.name}")
-       end
+        converge_by("Destroying zpool #{@zpool.name}") do
+          shell_out!("zpool destroy #{args_from_resource_add(@new_resource)} #{@zpool.name}")
+        end
       end
 
+      # rubocop:disable Metrics/AbcSize, MethodLength
       def action_create
         if created?
           if online?
@@ -125,11 +126,10 @@ class Chef
           zpool_create
         end
       end
+      # rubocop:enable Metrics/AbcSize, MethodLength
 
       def action_destroy
-        if created?
-          zpool_destroy
-        end
+        zpool_destroy if created?
       end
 
       private
@@ -155,7 +155,7 @@ class Chef
           args << "-m #{new_resource.mountpoint}"
         end
 
-        args << "-o autoexpand=on" if new_resource.autoexpand
+        args << '-o autoexpand=on' if new_resource.autoexpand
 
         args.join(' ')
       end
@@ -183,7 +183,6 @@ class Chef
       def online?
         @zpool.state == 'ONLINE'
       end
-
     end
   end
 end
