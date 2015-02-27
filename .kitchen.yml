@@ -17,4 +17,8 @@ suites:
 - name: default
   encrypted_data_bag_secret_key_path: "test/integration/encrypted_data_bag_secret"
   run_list:
-    - recipe[optoro_zpool::default]
+    - recipe[apt::default]
+    - recipe[zpool::test]
+  attributes:
+    apt:
+      compile_time_update: true

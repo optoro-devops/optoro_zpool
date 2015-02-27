@@ -13,22 +13,12 @@ class Chef
         @resource_name = :zpool
         @provider = Chef::Provider::Zpool
         @action = :create
-        @allowed_actions.push(:create,:destroy)
+        @allowed_actions.push(:create, :destroy)
         @name = name
-#        @disks = []
-#        @info = nil
-#        @state = nil
-#        @force = false
-#        @recursive = false
-#        @ashift = 0
-#        @cache_disks = nil
-#        @log_disks = nil
-#        @mountpoint = name
-#        @autoexpand = false
       end
 
       def action=(arg = nil)
-       set_or_return(:action, arg, :kind_of => [Symbol])
+        set_or_return(:action, arg, :kind_of => [Symbol])
       end
 
       def disks(arg = nil)
@@ -78,7 +68,6 @@ class Chef
   class Provider
     # Zpool Provider
     class Zpool < Chef::Provider
-
       include Chef::Mixin::ShellOut
 
       def whyrun_supported?
@@ -96,30 +85,32 @@ class Chef
 
         @zpool.info(info)
         @zpool.state(state)
-
       end
 
       def zpool_add(disk)
-        Chef::Log.info("Adding #{disk} to pool #{@zpool.name}")
-        shell_out!("zpool add #{args_from_resource_add(@new_resource)} #{@zpool.name} #{disk}")
-        new_resource.updated_by_last_action(true)
+        converge_by("Adding #{disk} to pool #{@zpool.name}") do
+          shell_out!("zpool add #{args_from_resource_add(@new_resource)} #{@zpool.name} #{disk}")
+        end
       end
 
+      # rubocop:disable Metrics/AbcSize, Metrics/LineLength
       def zpool_create
-        Chef::Log.info("Creating zpool #{@zpool.name}")
-        zpool_command = "zpool create #{args_from_resource_create(@new_resource)} #{@zpool.name} #{@zpool.disks.join(' ')}"
-        zpool_command << " log #{@zpool.log_disks.join(' ')}" unless @zpool.log_disks.nil?
-        zpool_command << " cache #{@zpool.cache_disks.join(' ')}" unless @zpool.cache_disks.nil?
-        shell_out!(zpool_command)
-        new_resource.updated_by_last_action(true)
+        converge_by("Creating zpool #{@zpool.name}") do
+          zpool_command = "zpool create #{args_from_resource_create(@new_resource)} #{@zpool.name} #{@zpool.disks.join(' ')}"
+          zpool_command << " log #{@zpool.log_disks.join(' ')}" unless @zpool.log_disks.nil?
+          zpool_command << " cache #{@zpool.cache_disks.join(' ')}" unless @zpool.cache_disks.nil?
+          shell_out!(zpool_command)
+        end
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/LineLength
 
       def zpool_destroy
-       Chef::Log.info("Destroying zpool #{@zpool.name}")
-       shell_out!("zpool destroy #{args_from_resource_add(@new_resource)} #{@zpool.name}")
-       new_resource.updated_by_last_action(true)
+        converge_by("Destroying zpool #{@zpool.name}") do
+          shell_out!("zpool destroy #{args_from_resource_add(@new_resource)} #{@zpool.name}")
+        end
       end
 
+      # rubocop:disable Metrics/AbcSize, MethodLength
       def action_create
         if created?
           if online?
@@ -135,11 +126,10 @@ class Chef
           zpool_create
         end
       end
+      # rubocop:enable Metrics/AbcSize, MethodLength
 
       def action_destroy
-        if created?
-          zpool_destroy
-        end
+        zpool_destroy if created?
       end
 
       private
@@ -165,7 +155,7 @@ class Chef
           args << "-m #{new_resource.mountpoint}"
         end
 
-        args << "-o autoexpand=on" if new_resource.autoexpand
+        args << '-o autoexpand=on' if new_resource.autoexpand
 
         args.join(' ')
       end
@@ -193,7 +183,6 @@ class Chef
       def online?
         @zpool.state == 'ONLINE'
       end
-
     end
   end
 end
